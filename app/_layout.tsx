@@ -8,6 +8,13 @@ export default function RootLayout() {
     <Provider store={store}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="product/[id]"
+          options={{
+            title: 'Detail',
+            headerShown: true,
+          }}
+        />
       </Stack>
     </Provider>
   );

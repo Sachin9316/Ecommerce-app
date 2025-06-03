@@ -38,6 +38,9 @@ export const productSlice = createSlice({
     getAllProduct: (state, action) => {
       state.products = action.payload;
     },
+    resetProductDetails: (state, action) => {
+      state.productDetail = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -68,5 +71,5 @@ export const productSlice = createSlice({
   },
 });
 
-export const { getAllProduct } = productSlice.actions;
+export const { getAllProduct, resetProductDetails } = productSlice.actions;
 export default productSlice.reducer;
