@@ -44,7 +44,8 @@ export default function ProductDetail() {
 
   console.log({
     rate,
-    price: product?.price
+    price: product?.price,
+    dis: product?.discount
   })
 
   return (
@@ -54,7 +55,7 @@ export default function ProductDetail() {
           <View>
             {
               !!product?.discount &&
-              <Text style={styles.discount}>
+              <Text style={{ ...styles.discount, zIndex: 10 }}>
                 {product?.discount ?? 10}%
               </Text>
             }
