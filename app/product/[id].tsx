@@ -1,40 +1,65 @@
 import Loading from "@/components/Loader/Loading";
-import { fetchProductById } from "@/redux/products/productSlice";
+import {
+  addCartData,
+  fetchProductById,
+  removeCartData,
+} from "@/redux/products/productSlice";
 import { globalStyles } from "@/styles/globalStyles";
 import { fetchUSD } from "@/utils/currencyConvertor";
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams();
   const dispatch = useDispatch();
-  const { productDetail, loading } = useSelector((state: any) => state.product);
+  const { productDetail, loading, cartData } = useSelector(
+    (state: any) => state.product
+  );
   const product = productDetail || {};
   const [buy, setBuy] = useState(true);
   const [readMoreTitle, setReadmoreTitle] = useState(true);
-  const title = readMoreTitle ? `${product?.title?.split(" ").join(' ').slice(0, 50)}...` : product?.title
+  const [loader, setLoader] = useState(false);
+  const title = readMoreTitle
+    ? `${product?.title?.split(" ").join(" ").slice(0, 50)}...`
+    : product?.title;
   const [readMore, setReadmore] = useState(true);
-  const description = readMore ? `${product?.description?.split(" ").join(' ').slice(0, 200)}...` : product?.description
-  const [rate, setRate] = useState<number | null>(null);
+  const description = readMore
+    ? `${product?.description?.split(" ").join(" ").slice(0, 200)}...`
+    : product?.description;
 
-  const handleToggel = () => {
+  const handleToggel = (id: string) => {
     setBuy(!buy);
-  }
+    if (buy) {
+      dispatch(addCartData(product));
+      console.log("Inside", id);
+      return;
+    }
+    dispatch(removeCartData(id));
+    console.log("outside", id);
+  };
 
   useEffect(() => {
     if (id) {
       dispatch(fetchProductById(id));
-    }
-
-    if (product) {
-      fetchUSD(product?.price, setRate);
+      const findId = cartData?.find((check: any) => check.id == id);
+      if (findId) {
+        console.log("findId", findId);
+        return setBuy(false);
+      }
     }
   }, [id]);
 
-  if (product.length === 0 && !id || loading) {
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <Loading />
@@ -43,22 +68,21 @@ export default function ProductDetail() {
   }
 
   console.log({
-    rate,
     price: product?.price,
-    dis: product?.discount
-  })
+    dis: product?.discount,
+    buy,
+  });
 
   return (
-    <View style={{ height: '100%', width: '100%' }}>
+    <View style={{ height: "100%", width: "100%" }}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
           <View>
-            {
-              !!product?.discount &&
+            {!!product?.discount && (
               <Text style={{ ...styles.discount, zIndex: 10 }}>
                 {product?.discount ?? 10}%
               </Text>
-            }
+            )}
             <Image
               source={{ uri: product?.image }}
               style={styles.image}
@@ -68,44 +92,80 @@ export default function ProductDetail() {
           <View style={styles.texts}>
             <View>
               <Text style={styles.title}>{title}</Text>
-              <TouchableOpacity onPress={() => setReadmoreTitle(!readMoreTitle)}>
+              <TouchableOpacity
+                onPress={() => setReadmoreTitle(!readMoreTitle)}
+              >
                 <Text style={globalStyles.themeTextColor}>
-                  {
-                    readMoreTitle ? "Read more" : "Read less"
-                  }
+                  {readMoreTitle ? "Read more" : "Read less"}
                 </Text>
               </TouchableOpacity>
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: "space-between", alignItems: 'center', }}>
-              <Text style={{ ...globalStyles.themeTextColor, fontWeight: 'bold', fontSize: 15, flexWrap: 'wrap', width: '50%' }}>Model: {product?.model}</Text>
-              <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', width: '50%', justifyContent: "flex-end" }}>
-                <Text style={{ ...globalStyles.themeTextColor, fontWeight: 'bold', fontSize: 18, }}>
-                  <FontAwesome name="rupee" size={16} color={'#586321'} /> {
-                    product?.discount ? `${rate - (rate * product?.discount / 100).toFixed(0)}` : rate
-                  }
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  ...globalStyles.themeTextColor,
+                  fontWeight: "bold",
+                  fontSize: 15,
+                  flexWrap: "wrap",
+                  width: "50%",
+                }}
+              >
+                Model: {product?.model}
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 5,
+                  alignItems: "center",
+                  width: "50%",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Text
+                  style={{
+                    ...globalStyles.themeTextColor,
+                    fontWeight: "bold",
+                    fontSize: 18,
+                  }}
+                >
+                  <FontAwesome name="dollar" size={17} color={"#568566"}/>
+                  {product?.discount
+                    ? `${
+                        product?.price -
+                        ((product?.price * product?.discount) / 100).toFixed(0)
+                      }`
+                    : product?.price}
                 </Text>
 
-                {
-                  !!product?.discount &&
-                  <Text style={{ textDecorationLine: 'line-through', fontSize: 12 }}><FontAwesome name="rupee" size={12} />{rate}</Text>
-                }
+                {!!product?.discount && (
+                  <Text
+                    style={{ textDecorationLine: "line-through", fontSize: 12 }}
+                  >
+                    <FontAwesome name="dollar" size={12} />
+                    {product?.price}
+                  </Text>
+                )}
 
-                {
-                  !!product?.discount &&
-                  <Text style={{ fontSize: 17, color: '#a62c1c' }}>
+                {!!product?.discount && (
+                  <Text style={{ fontSize: 17, color: "#a62c1c" }}>
                     -{product?.discount ?? 10}%
                   </Text>
-                }
-
+                )}
               </View>
             </View>
             <View>
-              <Text style={styles.description}>{description || "No description available."}</Text>
+              <Text style={styles.description}>
+                {description || "No description available."}
+              </Text>
               <TouchableOpacity onPress={() => setReadmore(!readMore)}>
                 <Text style={{ ...globalStyles.themeTextColor }}>
-                  {
-                    readMore ? "Read more" : "Read less"
-                  }
+                  {readMore ? "Read more" : "Read less"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -116,48 +176,82 @@ export default function ProductDetail() {
 
             <View>
               <View>
-                <Text style={{ fontWeight: 'bold', fontSize: 18, color: "#568566" }}>Product Deatils</Text>
+                <Text
+                  style={{ fontWeight: "bold", fontSize: 18, color: "#568566" }}
+                >
+                  Product Deatils
+                </Text>
               </View>
 
               <View>
-                {!!product?.brand && <View style={{ flexDirection: 'row', alignItems: 'center', columnGap: 3 }}>
-                  <Text style={{ color: 'black', fontSize: 10 }}>
-                    Brand :
+                {!!product?.brand && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      columnGap: 3,
+                    }}
+                  >
+                    <Text style={{ color: "black", fontSize: 10 }}>
+                      Brand :
+                    </Text>
+                    <Text style={{ ...styles.price, fontSize: 10 }}>
+                      {product?.brand}
+                    </Text>
+                  </View>
+                )}
+
+                {!!product?.color && (
+                  <Text style={{ ...styles.price, fontSize: 10 }}>
+                    {product?.color}
                   </Text>
-                  <Text style={{ ...styles.price, fontSize: 10 }}>{product?.brand}</Text>
-                </View>}
+                )}
 
-                {
-                  !!product?.color &&
-                  <Text style={{ ...styles.price, fontSize: 10 }}>{product?.color}</Text>
-                }
-
-                {
-                  !!product?.model &&
+                {!!product?.model && (
                   <Text style={styles.price}>{product?.model}</Text>
-                }
+                )}
               </View>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      <View style={{ position: 'absolute', bottom: 3, width: '100%' }}>
-        {
-          buy ? (
-            <TouchableOpacity onPress={handleToggel} style={{ width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#568566', padding: 20, borderRadius: 8 }} activeOpacity={0.97}>
-              <Text style={{ color: 'white', fontWeight: 'semibold' }}>
-                Add to cart
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={handleToggel} style={{ width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#8caf98', padding: 20, borderRadius: 8 }} activeOpacity={0.97}>
-              <Text style={{ color: 'white', fontWeight: 'semibold' }}>
-                Remove item
-              </Text>
-            </TouchableOpacity>
-          )
-        }
+      <View style={{ position: "absolute", bottom: 3, width: "100%" }}>
+        {buy ? (
+          <TouchableOpacity
+            onPress={() => handleToggel(product?.id)}
+            style={{
+              width: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#568566",
+              padding: 20,
+              borderRadius: 8,
+            }}
+            activeOpacity={0.97}
+          >
+            <Text style={{ color: "white", fontWeight: "semibold" }}>
+              Add to cart
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => handleToggel(product?.id)}
+            style={{
+              width: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#8caf98",
+              padding: 20,
+              borderRadius: 8,
+            }}
+            activeOpacity={0.97}
+          >
+            <Text style={{ color: "white", fontWeight: "semibold" }}>
+              Remove item
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -168,7 +262,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     backgroundColor: "#f9f9f9",
-    paddingBottom: 50
+    paddingBottom: 50,
   },
   loadingContainer: {
     flex: 1,
@@ -181,7 +275,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: "100%",
-    height: '100%',
+    height: "100%",
     backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
@@ -198,7 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#333",
-    paddingTop: 50
+    paddingTop: 50,
   },
   price: {
     fontSize: 20,
@@ -214,11 +308,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 1,
     right: 0,
-    backgroundColor: '#7caf98',
+    backgroundColor: "#7caf98",
     borderRadius: 10,
     padding: 10,
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 18
-  }
+    color: "white",
+    fontWeight: "700",
+    fontSize: 18,
+  },
 });

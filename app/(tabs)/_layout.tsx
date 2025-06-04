@@ -37,9 +37,9 @@ export default function _layout() {
           }}
         />
         <Tabs.Screen
-          name="grocery"
+          name="cart"
           options={{
-            title: "Grocery",
+            title: "Cart",
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons
                 name="local-grocery-store"

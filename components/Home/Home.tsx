@@ -1,8 +1,13 @@
-import { fetchAllCategories, fetchAllProducts, fetchCategoryById, resetProductDetails } from "@/redux/products/productSlice";
+import {
+  fetchAllCategories,
+  fetchAllProducts,
+  fetchCategoryById,
+  resetProductDetails,
+} from "@/redux/products/productSlice";
 import { ROUTES } from "@/utils/routes";
-import AntDesign from '@expo/vector-icons/AntDesign';
-import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -12,13 +17,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import ItemCard from "./ItemCard";
 import Loading from "../Loader/Loading";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 function Home() {
   const productState = useSelector((state: any) => state.product);
@@ -30,7 +35,9 @@ function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const filteredProducts = products.filter((p: any) => {
-    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = p.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
 
@@ -39,12 +46,12 @@ function Home() {
     if (!selectedCategory) {
       dispatch(fetchAllProducts());
     }
-  }, [selectedCategory])
+  }, [selectedCategory]);
 
   useEffect(() => {
     dispatch(fetchAllProducts());
     dispatch(fetchAllCategories());
-    dispatch(resetProductDetails({}));
+    dispatch(resetProductDetails());
   }, []);
 
   const handleEdit = (id: number) => {
@@ -59,18 +66,28 @@ function Home() {
     );
   }
 
-
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <FontAwesome name="user-o" size={24} color="black" style={styles.userIcon} />
-        <Text style={styles.welcomeText}>Welcome
+        <FontAwesome
+          name="user-o"
+          size={24}
+          color="black"
+          style={styles.userIcon}
+        />
+        <Text style={styles.welcomeText}>
+          Welcome
           <Entypo name="hand" size={24} color="orange" />
         </Text>
       </View>
 
       <View style={styles.searchWrapper}>
-        <AntDesign name="search1" size={20} color="gray" style={styles.searchIcon} />
+        <AntDesign
+          name="search1"
+          size={20}
+          color="gray"
+          style={styles.searchIcon}
+        />
         <TextInput
           placeholder="Search products"
           value={searchQuery}
@@ -89,14 +106,16 @@ function Home() {
             <TouchableOpacity
               style={[
                 styles.categoryButton,
-                selectedCategory === item && styles.selectedCategoryButton
+                selectedCategory === item && styles.selectedCategoryButton,
               ]}
-              onPress={() => setSelectedCategory(item === selectedCategory ? null : item)}
+              onPress={() =>
+                setSelectedCategory(item === selectedCategory ? null : item)
+              }
             >
               <Text
                 style={[
                   styles.categoryText,
-                  selectedCategory === item && styles.selectedCategoryText
+                  selectedCategory === item && styles.selectedCategoryText,
                 ]}
               >
                 {item}
@@ -112,7 +131,10 @@ function Home() {
         contentContainerStyle={styles.listContainer}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.97} onPress={() => handleEdit(item?.id)}>
+          <TouchableOpacity
+            activeOpacity={0.97}
+            onPress={() => handleEdit(item?.id)}
+          >
             <ItemCard item={item} />
           </TouchableOpacity>
         )}
@@ -129,57 +151,57 @@ function Home() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    width: '100%',
-    backgroundColor: '#fff'
+    width: "100%",
+    backgroundColor: "#fff",
   },
   header: {
     paddingHorizontal: 30,
-    paddingVertical: 16
+    paddingVertical: 16,
   },
   userIcon: {
-    alignSelf: "flex-end"
+    alignSelf: "flex-end",
   },
   welcomeText: {
     fontSize: 28,
-    fontWeight: 'bold',
-    fontFamily: 'sans-serif',
+    fontWeight: "bold",
+    fontFamily: "sans-serif",
   },
   searchWrapper: {
     position: "relative",
     marginHorizontal: 16,
-    marginBottom: 16
+    marginBottom: 16,
   },
   searchIcon: {
-    position: 'absolute',
+    position: "absolute",
     left: 12,
     top: 14,
-    zIndex: 1
+    zIndex: 1,
   },
   searchInput: {
     height: 50,
     borderRadius: 10,
     paddingLeft: 40,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderWidth: 2,
     borderColor: "#dfe2e5",
-    fontSize: 16
+    fontSize: 16,
   },
   listContainer: {
     paddingHorizontal: 2,
-    paddingBottom: 16
+    paddingBottom: 16,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   emptyContainer: {
     paddingTop: 50,
-    alignItems: "center"
+    alignItems: "center",
   },
   emptyText: {
     color: "gray",
-    fontSize: 16
+    fontSize: 16,
   },
   categoryButton: {
     paddingVertical: 8,
@@ -202,7 +224,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-
 });
 
 export default React.memo(Home);
