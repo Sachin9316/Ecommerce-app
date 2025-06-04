@@ -1,4 +1,4 @@
-import { fetchAllProducts, resetProductDetails } from "@/redux/products/productSlice";
+import { fetchAllCategories, fetchAllProducts, fetchCategoryById, resetProductDetails } from "@/redux/products/productSlice";
 import { ROUTES } from "@/utils/routes";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -23,20 +23,27 @@ const { width } = Dimensions.get('window');
 function Home() {
   const productState = useSelector((state: any) => state.product);
   const products = productState?.products || [];
+  const categories = productState?.categories || [];
   const dispatch = useDispatch();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const categories = [...new Set(products.map((p: any) => p.category))];
 
   const filteredProducts = products.filter((p: any) => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory ? p.category === selectedCategory : true;
-    return matchesSearch && matchesCategory;
+    return matchesSearch;
   });
 
   useEffect(() => {
+    dispatch(fetchCategoryById(selectedCategory));
+    if (!selectedCategory) {
+      dispatch(fetchAllProducts());
+    }
+  }, [selectedCategory])
+
+  useEffect(() => {
     dispatch(fetchAllProducts());
+    dispatch(fetchAllCategories());
     dispatch(resetProductDetails({}));
   }, []);
 
@@ -52,9 +59,6 @@ function Home() {
     );
   }
 
-  console.log({
-    products,
-  })
 
   return (
     <View style={styles.screen}>

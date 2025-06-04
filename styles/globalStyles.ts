@@ -6,4 +6,7 @@ export const globalStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  themeTextColor: {
+    color: "#568566",
+  },
 });

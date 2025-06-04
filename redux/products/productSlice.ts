@@ -3,6 +3,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   products: [],
+  categories: [],
   productDetail: {},
   loading: false,
   error: null,
@@ -12,11 +13,24 @@ export const fetchAllProducts = createAsyncThunk("fetch/products", async () => {
   try {
     const response = await fetch(`${PRODUCTS.getAllProducts}`);
     const data = await response.json();
-    return data;
+    return data?.products;
   } catch (error: any) {
     throw Error(error.message || "Failed to fetch products");
   }
 });
+
+export const fetchAllCategories = createAsyncThunk(
+  "fetch/categories",
+  async () => {
+    try {
+      const response = await fetch(`${PRODUCTS.getAllCategory}`);
+      const data = await response.json();
+      return data?.categories;
+    } catch (error: any) {
+      throw Error(error.message || "Failed to fetch categories");
+    }
+  }
+);
 
 export const fetchProductById = createAsyncThunk(
   "fetch/productById",
@@ -24,9 +38,22 @@ export const fetchProductById = createAsyncThunk(
     try {
       const response = await fetch(`${PRODUCTS.getProductById(id)}`);
       const data = await response.json();
-      return data;
+      return data?.product;
     } catch (error: any) {
       throw Error(error.message || "Failed to fetch product");
+    }
+  }
+);
+
+export const fetchCategoryById = createAsyncThunk(
+  "fetch/categoryById",
+  async (type: string) => {
+    try {
+      const response = await fetch(`${PRODUCTS.getCategoryById(type)}`);
+      const data = await response.json();
+      return data?.products;
+    } catch (error: any) {
+      throw Error(error.message || "Failed to fetch category by Type");
     }
   }
 );
@@ -65,6 +92,30 @@ export const productSlice = createSlice({
         state.productDetail = action.payload;
       })
       .addCase(fetchProductById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchAllCategories.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllCategories.fulfilled, (state, action) => {
+        state.loading = false;
+        state.categories = action.payload;
+      })
+      .addCase(fetchAllCategories.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchCategoryById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCategoryById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload;
+      })
+      .addCase(fetchCategoryById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

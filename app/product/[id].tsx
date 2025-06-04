@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProductById } from "@/redux/products/productSlice";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Loading from "@/components/Loader/Loading";
+import { globalStyles } from "@/styles/globalStyles";
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams();
@@ -12,6 +13,10 @@ export default function ProductDetail() {
   const { productDetail, loading } = useSelector((state: any) => state.product);
   const product = productDetail || {};
   const [buy, setBuy] = useState(true);
+  const [readMoreTitle, setReadmoreTitle] = useState(true);
+  const title = readMoreTitle ? `${product?.title?.split(" ").join(' ').slice(0, 50)}...` : product?.title
+  const [readMore, setReadmore] = useState(true);
+  const description = readMore ? `${product?.description?.split(" ").join(' ').slice(0, 200)}...` : product?.description
 
   const handleToggel = () => {
     setBuy(!buy);
@@ -38,20 +43,58 @@ export default function ProductDetail() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.card}>
-        <Image
-          source={{ uri: product?.image }}
-          style={styles.image}
-          resizeMode="contain"
-        />
+        <View>
+          <Image
+            source={{ uri: product?.image }}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        </View>
         <View style={styles.texts}>
-          <Text style={styles.title}>{product?.title}</Text>
-          <Text style={styles.price}>${product?.price}</Text>
-          <Text style={styles.description}>
-            {product?.description || "No description available."}
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "space-between" }}>
-            <Text style={{ fontWeight: 'bold' }}>Reviews: {product?.rating?.count}</Text>
+          <View>
+            <Text style={styles.title}>{title}</Text>
+            <TouchableOpacity onPress={() => setReadmoreTitle(!readMoreTitle)}>
+              <Text style={globalStyles.themeTextColor}>
+                {
+                  readMoreTitle ? "Read more" : "Read less"
+                }
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
+            <Text style={{ ...globalStyles.themeTextColor, fontWeight: 'bold', fontSize: 15 }}>Model: {product?.model}</Text>
+            <Text style={{ ...globalStyles.themeTextColor, fontWeight: 'bold', fontSize: 15 }}>${product?.price}</Text>
+          </View>
+          <View>
+            <Text style={styles.description}>{description || "No description available."}</Text>
+            <TouchableOpacity onPress={() => setReadmore(!readMore)}>
+              <Text style={{ ...globalStyles.themeTextColor }}>
+                {
+                  readMore ? "Read more" : "Read less"
+                }
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {/* <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "space-between" }}>
+            <Text style={{ fontWeight: 'bold' }}>Reviews: {product?.brand}</Text>
             <Text style={{ fontWeight: 'bold' }}>Rating: {product?.rating?.rate} <AntDesign name="star" size={14} color={'gold'} /></Text>
+          </View> */}
+
+          <View>
+            <View>
+              <Text style={{ fontWeight: 'bold', fontSize: 18, color: "#568566" }}>Product Deatils</Text>
+            </View>
+
+            <View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', columnGap: 3 }}>
+                <Text style={{ color: 'black', fontSize: 10 }}>
+                  Brand :
+                </Text>
+                <Text style={{ ...styles.price, fontSize: 10 }}>{product?.brand}</Text>
+              </View>
+              <Text style={{ ...styles.price, fontSize: 10 }}>{product?.color}</Text>
+              <Text style={styles.price}>{product?.model}</Text>
+            </View>
           </View>
         </View>
 
@@ -72,8 +115,6 @@ export default function ProductDetail() {
             )
           }
         </View>
-
-
       </View>
     </ScrollView>
   );
@@ -106,7 +147,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 250,
     borderRadius: 12,
-    marginBottom: 20,
   },
   texts: {
     gap: 12,
@@ -120,8 +160,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#4CAF50",
-    width: '100%',
-    textAlign: 'right'
   },
   description: {
     fontSize: 14,
