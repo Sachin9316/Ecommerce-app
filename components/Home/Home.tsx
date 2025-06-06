@@ -9,7 +9,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { lazy, useEffect, useState, useMemo, useCallback } from "react";
 import {
   Dimensions,
   FlatList,
@@ -20,7 +20,7 @@ import {
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import ItemCard from "./ItemCard";
+const ItemCard = lazy(() => import("./ItemCard"))
 import Loading from "../Loader/Loading";
 
 const { width } = Dimensions.get("window");
@@ -34,12 +34,15 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const filteredProducts = products.filter((p: any) => {
-    const matchesSearch = p.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
+  // Memoize filtered products to prevent unnecessary recalculations
+  const filteredProducts = useMemo(() => {
+    return products.filter((p: any) => {
+      const matchesSearch = p.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    });
+  }, [products, searchQuery]);
 
   useEffect(() => {
     dispatch(fetchCategoryById(selectedCategory));
@@ -54,9 +57,55 @@ function Home() {
     dispatch(resetProductDetails());
   }, []);
 
-  const handleEdit = (id: number) => {
+  // Memoize the handleEdit function
+  const handleEdit = useCallback((id: number) => {
     router.push(ROUTES.productDetail(id));
-  };
+  }, [router]);
+
+  // Memoize renderItem function to prevent recreating on every render
+  const renderItem = useCallback(({ item }: any) => (
+    <TouchableOpacity
+      activeOpacity={0.97}
+      onPress={() => handleEdit(item?.id)}
+    >
+      <ItemCard item={item} />
+    </TouchableOpacity>
+  ), [handleEdit]);
+
+  // Memoize keyExtractor
+  const keyExtractor = useCallback((item: any) => item.id.toString(), []);
+
+  // Memoize ListEmptyComponent
+  const ListEmptyComponent = useMemo(() => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>No products found</Text>
+    </View>
+  ), []);
+
+  // Memoize category renderItem
+  const renderCategoryItem = useCallback(({ item }: any) => (
+    <TouchableOpacity
+      style={[
+        styles.categoryButton,
+        selectedCategory === item && styles.selectedCategoryButton,
+      ]}
+      onPress={() =>
+        setSelectedCategory(item === selectedCategory ? null : item)
+      }
+    >
+      <Text
+        style={[
+          styles.categoryText,
+          selectedCategory === item && styles.selectedCategoryText,
+        ]}
+      >
+        {item}
+      </Text>
+    </TouchableOpacity>
+  ), [selectedCategory]);
+
+  // Memoize category keyExtractor
+  const categoryKeyExtractor = useCallback((item: any) => item, []);
 
   if (productState?.loading) {
     return (
@@ -101,27 +150,8 @@ function Home() {
           horizontal
           showsHorizontalScrollIndicator={false}
           data={categories}
-          keyExtractor={(item: any) => item}
-          renderItem={({ item }: any) => (
-            <TouchableOpacity
-              style={[
-                styles.categoryButton,
-                selectedCategory === item && styles.selectedCategoryButton,
-              ]}
-              onPress={() =>
-                setSelectedCategory(item === selectedCategory ? null : item)
-              }
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  selectedCategory === item && styles.selectedCategoryText,
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
+          keyExtractor={categoryKeyExtractor}
+          renderItem={renderCategoryItem}
         />
       </View>
 
@@ -129,20 +159,19 @@ function Home() {
         data={filteredProducts}
         numColumns={2}
         contentContainerStyle={styles.listContainer}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.97}
-            onPress={() => handleEdit(item?.id)}
-          >
-            <ItemCard item={item} />
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No products found</Text>
-          </View>
-        }
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        ListEmptyComponent={ListEmptyComponent}
+        // Add these props for better performance
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        windowSize={10}
+        getItemLayout={(data, index) => ({
+          length: 290, // Approximate height of ItemCard (270) + margin (20)
+          offset: 290 * Math.floor(index / 2), // Since numColumns=2
+          index,
+        })}
       />
     </View>
   );

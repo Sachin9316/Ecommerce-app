@@ -1,85 +1,95 @@
-import { globalStyles } from "@/styles/globalStyles";
-import { ROUTES } from "@/utils/routes";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useRouter } from "expo-router";
 import React from "react";
-import { View, Text, Image, FlatList, TouchableOpacity } from "react-native";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { useSelector } from "react-redux";
+import CartItem from "../../components/Cart/cartItem";
+
+export const cardStyle = {
+  mainCard: {
+    flexDirection: "row",
+    gap: 10,
+    marginVertical: 7,
+    padding: 10,
+    elevation: 3,
+    shadowColor: "black",
+    shadowOffset: { width: 0, height: 3 },
+    backgroundColor: 'white',
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    borderRadius: 10
+  },
+  img: {
+    width: 100,
+    height: 100,
+    borderWidth: 0.5,
+    borderRadius: 10,
+    borderColor: "#ccc",
+  },
+  addMoreBtn: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 2,
+    borderWidth: 0.5,
+    paddingHorizontal: 10,
+    borderColor: 'gray',
+  }
+}
 
 export default function Grocery() {
   const { cartData } = useSelector((state: any) => state.product);
-  const router = useRouter();
   const data = cartData || [];
 
   const total = cartData?.reduce((sum: number, item: any) => {
-    const discountAmount = ((item?.price || 0) * (item?.discount || 0)) / 100;
+    const discountAmount = item?.price - ((item?.price * item?.discount) / 100).toFixed(2);
     return sum + discountAmount;
   }, 0);
 
+  const taxes = total / 18;
+  const afterTax = total + taxes;
+
   const renderItem = ({ item }: { item: any }) => {
-    const title = item?.title.split("").join("").slice(0, 40);
+    return <CartItem item={item} />
+  };
+
+  const billDeatis = () => {
     return (
-      <TouchableOpacity
-        onPress={() => router.push(ROUTES.productDetail(item?.id))}
-      >
+      <View style={{ width: "100%", paddingVertical: 15, gap: 15 }}>
+        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+          Bill Deatils
+        </Text>
+
         <View
-          style={{
-            flexDirection: "row",
-            gap: 10,
-            marginVertical: 8,
-            borderBottomWidth: 2,
-            borderBottomColor: "#568566",
-          }}
+          style={cardStyle.mainCard}
         >
-          <Image
-            source={{ uri: item?.image }}
-            style={{
-              width: 100,
-              height: 100,
-              borderWidth: 1,
-              borderColor: "#ccc",
-            }}
-            resizeMode="contain"
-          />
-
           <View
-            style={{ flex: 1, justifyContent: "center", paddingHorizontal: 10 }}
+            style={{
+              flex: 1,
+              justifyContent: "space-between",
+              paddingHorizontal: 2,
+            }}
           >
-            <Text style={{ fontWeight: "bold", fontSize: 16 }}>{title}</Text>
-            <Text style={{ color: "#666", fontSize: 14 }}>{item?.model}</Text>
-            <Text style={{ color: "#666", fontSize: 14 }}>{item?.color}</Text>
-            <View style={{flexDirection: 'row', alignItems: 'center' ,columnGap: 5}}>
-              <Text style={{ fontSize: 20, ...globalStyles.themeTextColor }}>
-                $
-                {item?.discount
-                  ? `${
-                      item?.price -
-                      ((item?.price * item?.discount) / 100).toFixed(0)
-                    }`
-                  : item?.price}
-              </Text>
-              <Text>
-                {!!item?.discount && (
-                  <Text
-                    style={{ textDecorationLine: "line-through", fontSize: 12 }}
-                  >
-                    <FontAwesome name="dollar" size={12} />
-                    {item?.price}
-                  </Text>
-                )}
-
-                {!!item?.discount && (
-                  <Text style={{ fontSize: 12, color: "#a62c1c" }}>
-                    -{item?.discount ?? 10}%
-                  </Text>
-                )}
-              </Text>
+            <View style={{ alignItems: 'center', gap: 10 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                <Text style={{ fontWeight: "bold", fontSize: 16, flexWrap: "wrap", color: '#777777' }}>Item Total</Text>
+                <Text style={{ fontWeight: "bold", fontSize: 16, flexWrap: "wrap" }}>$ {total}</Text>
+              </View>
+              <View style={{ borderWidth: 1, width: '110%', borderStyle: 'dashed' }} />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                <Text style={{ fontWeight: "bold", fontSize: 16, flexWrap: "wrap", color: '#5677' }}>Taxes and charges</Text>
+                <Text style={{ fontWeight: "bold", fontSize: 16, flexWrap: "wrap" }}>$ {taxes.toFixed(2)}</Text>
+              </View>
+              <View style={{ borderWidth: 1, width: '110%', borderStyle: 'dashed' }} />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                <Text style={{ fontWeight: "bold", fontSize: 16, flexWrap: "wrap" }}>To pay</Text>
+                <Text style={{ fontWeight: "bold", fontSize: 16, flexWrap: "wrap" }}>$ {afterTax.toFixed(2)}</Text>
+              </View>
             </View>
           </View>
         </View>
-      </TouchableOpacity>
-    );
-  };
+      </View>
+    )
+  }
 
   return (
     <View style={{ position: "relative", height: "100%" }}>
@@ -89,6 +99,7 @@ export default function Grocery() {
           numColumns={1}
           renderItem={renderItem}
           keyExtractor={(item) => item.id?.toString()}
+          ListFooterComponent={billDeatis}
           ListEmptyComponent={<Text>No items in cart.</Text>}
         />
       </View>

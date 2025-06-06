@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { addCartData, removeCartData } from "@/redux/products/productSlice";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 interface Props {
   item: {
@@ -11,15 +13,43 @@ interface Props {
 }
 
 const ItemCard = ({ item }: Props) => {
-  const titleSize = item?.title && `${item.title.split("").join('').slice(0, 15)}..`
-  const [buy, setBuy] = useState(true);
+  const dispatch = useDispatch();
 
-  const handleToggel = () => {
-    setBuy(!buy);
-  }
+  // Use a selector that only gets the specific cart item status
+  const isInCart = useSelector((state: any) =>
+    state.product.cartData?.some((cartItem: any) => cartItem.id === item.id)
+  );
+
+  // Memoize the truncated title
+  const titleSize = useMemo(() => {
+    return item?.title ? `${item.title.slice(0, 15)}..` : '';
+  }, [item?.title]);
+
+  // Memoized handler for toggle action
+  const handleToggle = useCallback(() => {
+    if (isInCart) {
+      dispatch(removeCartData(item.id));
+    } else {
+      dispatch(addCartData(item));
+    }
+  }, [isInCart, item, dispatch]);
+
+  // Memoize the button style
+  const buttonStyle = useMemo(() => ({
+    width: '100%',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    backgroundColor: isInCart ? '#8caf98' : '#568566',
+    padding: 8
+  }), [isInCart]);
+
   return (
     <View style={styles.card}>
-      <Image source={{ uri: item?.image }} style={styles.image} resizeMode="contain" />
+      <Image
+        source={{ uri: item?.image }}
+        style={styles.image}
+        resizeMode="contain"
+      />
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={2}>
           {titleSize}
@@ -29,21 +59,15 @@ const ItemCard = ({ item }: Props) => {
         </View>
       </View>
       <View>
-        {
-          buy ? (
-            <TouchableOpacity onPress={handleToggel} style={{ width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#568566', padding: 8 }} activeOpacity={0.7}>
-              <Text style={{ color: 'white' }}>
-                Add to cart
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={handleToggel} style={{ width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#8caf98', padding: 8 }} activeOpacity={0.7}>
-              <Text style={{ color: 'white' }}>
-                Remove item
-              </Text>
-            </TouchableOpacity>
-          )
-        }
+        <TouchableOpacity
+          onPress={handleToggle}
+          style={buttonStyle}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.buttonText}>
+            {isInCart ? 'Remove item' : 'Add to cart'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -91,6 +115,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     color: "#4CAF50",
+  },
+  buttonText: {
+    color: 'white',
   },
 });
 

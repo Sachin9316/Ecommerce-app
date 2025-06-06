@@ -72,6 +72,9 @@ export const productSlice = createSlice({
     addCartData: (state, action) => {
       const data: any = action?.payload;
       state.cartData.push(data);
+      console.log({
+        data: state.cartData,
+      });
     },
     removeCartData: (state, action) => {
       const id = action.payload;
