@@ -28,7 +28,6 @@ export default function ProductDetail() {
   const product = productDetail || {};
   const [buy, setBuy] = useState(true);
   const [readMoreTitle, setReadmoreTitle] = useState(true);
-  const [loader, setLoader] = useState(false);
   const title = readMoreTitle
     ? `${product?.title?.split(" ").join(" ").slice(0, 50)}...`
     : product?.title;
@@ -134,12 +133,11 @@ export default function ProductDetail() {
                     fontSize: 18,
                   }}
                 >
-                  <FontAwesome name="dollar" size={17} color={"#568566"}/>
+                  <FontAwesome name="dollar" size={17} color={"#568566"} />
                   {product?.discount
-                    ? `${
-                        product?.price -
-                        ((product?.price * product?.discount) / 100).toFixed(0)
-                      }`
+                    ? `${product?.price -
+                    ((product?.price * product?.discount) / 100).toFixed(0)
+                    }`
                     : product?.price}
                 </Text>
 
