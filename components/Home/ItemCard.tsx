@@ -1,5 +1,5 @@
-import { addCartData, removeCartData } from "@/redux/products/productSlice";
-import React, { useCallback, useEffect, useState, useMemo } from "react";
+import { addCartData, removeCartData } from "@/redux/carts/cartSlice";
+import React, { useCallback, useMemo } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -15,33 +15,32 @@ interface Props {
 const ItemCard = ({ item }: Props) => {
   const dispatch = useDispatch();
 
-  // Use a selector that only gets the specific cart item status
   const isInCart = useSelector((state: any) =>
-    state.product.cartData?.some((cartItem: any) => cartItem.id === item.id)
+    state.cart.cartData?.some((cartItem: any) => cartItem.id === item.id)
   );
 
-  // Memoize the truncated title
   const titleSize = useMemo(() => {
-    return item?.title ? `${item.title.slice(0, 15)}..` : '';
+    return item?.title ? `${item.title.slice(0, 16)}..` : "";
   }, [item?.title]);
 
-  // Memoized handler for toggle action
   const handleToggle = useCallback(() => {
     if (isInCart) {
       dispatch(removeCartData(item.id));
     } else {
-      dispatch(addCartData(item));
+      dispatch(addCartData({ ...item, count: 1 }));
     }
   }, [isInCart, item, dispatch]);
 
-  // Memoize the button style
-  const buttonStyle = useMemo(() => ({
-    width: '100%',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    backgroundColor: isInCart ? '#8caf98' : '#568566',
-    padding: 8
-  }), [isInCart]);
+  const buttonStyle = useMemo(
+    () => ({
+      width: "100%",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      backgroundColor: isInCart ? "#8caf98" : "#568566",
+      padding: 8,
+    }),
+    [isInCart]
+  );
 
   return (
     <View style={styles.card}>
@@ -65,7 +64,7 @@ const ItemCard = ({ item }: Props) => {
           activeOpacity={0.7}
         >
           <Text style={styles.buttonText}>
-            {isInCart ? 'Remove item' : 'Add to cart'}
+            {isInCart ? "Remove item" : "Add to cart"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -117,7 +116,7 @@ const styles = StyleSheet.create({
     color: "#4CAF50",
   },
   buttonText: {
-    color: 'white',
+    color: "white",
   },
 });
 

@@ -39,7 +39,10 @@ export default function _layout() {
         <Tabs.Screen
           name="cart"
           options={{
-            title: "Cart",
+            title: "My cart",
+            headerShown: true,
+            headerTitleAlign: 'left',
+            headerStatusBarHeight: 1,
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons
                 name="local-grocery-store"

@@ -20,7 +20,7 @@ import {
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-const ItemCard = lazy(() => import("./ItemCard"))
+const ItemCard = lazy(() => import("./ItemCard"));
 import Loading from "../Loader/Loading";
 
 const { width } = Dimensions.get("window");
@@ -34,15 +34,9 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Memoize filtered products to prevent unnecessary recalculations
-  const filteredProducts = useMemo(() => {
-    return products.filter((p: any) => {
-      const matchesSearch = p.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      return matchesSearch;
-    });
-  }, [products, searchQuery]);
+  const filteredProducts = products.filter((p: any) =>
+    p.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     dispatch(fetchCategoryById(selectedCategory));
@@ -57,33 +51,25 @@ function Home() {
     dispatch(resetProductDetails());
   }, []);
 
-  // Memoize the handleEdit function
-  const handleEdit = useCallback((id: number) => {
+  const handleEdit = (id: number) => {
     router.push(ROUTES.productDetail(id));
-  }, [router]);
+  };
 
-  // Memoize renderItem function to prevent recreating on every render
-  const renderItem = useCallback(({ item }: any) => (
-    <TouchableOpacity
-      activeOpacity={0.97}
-      onPress={() => handleEdit(item?.id)}
-    >
+  const renderItem = ({ item }: any) => (
+    <TouchableOpacity activeOpacity={0.97} onPress={() => handleEdit(item?.id)}>
       <ItemCard item={item} />
     </TouchableOpacity>
-  ), [handleEdit]);
+  );
 
-  // Memoize keyExtractor
-  const keyExtractor = useCallback((item: any) => item.id.toString(), []);
+  const keyExtractor = (item: any) => item.id.toString();
 
-  // Memoize ListEmptyComponent
-  const ListEmptyComponent = useMemo(() => (
+  const ListEmptyComponent = (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyText}>No products found</Text>
     </View>
-  ), []);
+  );
 
-  // Memoize category renderItem
-  const renderCategoryItem = useCallback(({ item }: any) => (
+  const renderCategoryItem = ({ item }: any) => (
     <TouchableOpacity
       style={[
         styles.categoryButton,
@@ -102,10 +88,9 @@ function Home() {
         {item}
       </Text>
     </TouchableOpacity>
-  ), [selectedCategory]);
+  );
 
-  // Memoize category keyExtractor
-  const categoryKeyExtractor = useCallback((item: any) => item, []);
+  const categoryKeyExtractor = (item: any) => item;
 
   if (productState?.loading) {
     return (
@@ -162,14 +147,15 @@ function Home() {
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         ListEmptyComponent={ListEmptyComponent}
-        // Add these props for better performance
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         updateCellsBatchingPeriod={50}
         windowSize={10}
+        refreshing={productState?.loading}
+        onRefresh={() => dispatch(fetchAllProducts())}
         getItemLayout={(data, index) => ({
-          length: 290, // Approximate height of ItemCard (270) + margin (20)
-          offset: 290 * Math.floor(index / 2), // Since numColumns=2
+          length: 290,
+          offset: 290 * Math.floor(index / 2),
           index,
         })}
       />

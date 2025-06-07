@@ -1,13 +1,12 @@
+import ItemCard from "@/components/Home/ItemCard";
 import Loading from "@/components/Loader/Loading";
-import {
-  addCartData,
-  fetchProductById,
-  removeCartData,
-} from "@/redux/products/productSlice";
+import { addCartData, removeCartData } from "@/redux/carts/cartSlice";
+import { fetchProductById } from "@/redux/products/productSlice";
+import { addToRecentHistory } from "@/redux/recent/recentSlice";
 import { globalStyles } from "@/styles/globalStyles";
-import { fetchUSD } from "@/utils/currencyConvertor";
+import { ROUTES } from "@/utils/routes";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Image,
@@ -22,24 +21,26 @@ import { useDispatch, useSelector } from "react-redux";
 export default function ProductDetail() {
   const { id } = useLocalSearchParams();
   const dispatch = useDispatch();
-  const { productDetail, loading, cartData } = useSelector(
-    (state: any) => state.product
-  );
+  const { productDetail, loading } = useSelector((state: any) => state.product);
+  const { recentData } = useSelector((state: any) => state.recent);
+  const { cartData } = useSelector((state: any) => state.cart);
   const product = productDetail || {};
   const [buy, setBuy] = useState(true);
   const [readMoreTitle, setReadmoreTitle] = useState(true);
   const title = readMoreTitle
-    ? `${product?.title?.split(" ").join(" ").slice(0, 50)}...`
+    ? `${product?.title?.split(" ").slice(0, 6).join(" ")}..`
     : product?.title;
   const [readMore, setReadmore] = useState(true);
   const description = readMore
     ? `${product?.description?.split(" ").join(" ").slice(0, 200)}...`
     : product?.description;
+  const findId = cartData?.find((check: any) => check.id == id);
+  const router = useRouter();
 
   const handleToggel = (id: string) => {
     setBuy(!buy);
     if (buy) {
-      dispatch(addCartData(product));
+      dispatch(addCartData({ ...product, count: 1 }));
       console.log("Inside", id);
       return;
     }
@@ -50,10 +51,13 @@ export default function ProductDetail() {
   useEffect(() => {
     if (id) {
       dispatch(fetchProductById(id));
-      const findId = cartData?.find((check: any) => check.id == id);
       if (findId) {
         console.log("findId", findId);
         return setBuy(false);
+      }
+
+      if (!loading && Object.keys(product).length > 0) {
+        dispatch(addToRecentHistory(product));
       }
     }
   }, [id]);
@@ -67,14 +71,16 @@ export default function ProductDetail() {
   }
 
   console.log({
-    price: product?.price,
-    dis: product?.discount,
-    buy,
+    id,
+    recentData: recentData?.length,
   });
 
   return (
     <View style={{ height: "100%", width: "100%" }}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsHorizontalScrollIndicator={false}
+      >
         <View style={styles.card}>
           <View>
             {!!product?.discount && (
@@ -135,9 +141,10 @@ export default function ProductDetail() {
                 >
                   <FontAwesome name="dollar" size={17} color={"#568566"} />
                   {product?.discount
-                    ? `${product?.price -
-                    ((product?.price * product?.discount) / 100).toFixed(0)
-                    }`
+                    ? `${
+                        product?.price -
+                        ((product?.price * product?.discount) / 100).toFixed(0)
+                      }`
                     : product?.price}
                 </Text>
 
@@ -200,16 +207,68 @@ export default function ProductDetail() {
                 )}
 
                 {!!product?.color && (
-                  <Text style={{ ...styles.price, fontSize: 10 }}>
-                    {product?.color}
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={{ color: "black", fontSize: 8 }}>Color :</Text>
+                    <Text
+                      style={{ ...styles.price, fontSize: 10, paddingLeft: 2 }}
+                    >
+                      {product?.color}
+                    </Text>
+                  </View>
                 )}
 
                 {!!product?.model && (
-                  <Text style={styles.price}>{product?.model}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text
+                      style={{ color: "gray", fontSize: 14, fontWeight: "500" }}
+                    >
+                      Model :
+                    </Text>
+                    <Text style={{ ...styles.price, paddingLeft: 2 }}>
+                      {product?.model}
+                    </Text>
+                  </View>
                 )}
               </View>
             </View>
+          </View>
+          <View
+            style={{
+              marginTop: 8,
+              justifyContent: "flex-start",
+              width: "100%",
+            }}
+          >
+            <Text
+              style={{ fontWeight: "bold", fontSize: 18, color: "#348566" }}
+            >
+              Recently Viewed
+            </Text>
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                flexDirection: "row",
+                justifyContent: "flex-start",
+              }}
+            >
+              {recentData?.length > 0 &&
+                recentData
+                  ?.filter((item: any) => item?.id != id)
+                  .map((item: any) => {
+                    return (
+                      <TouchableOpacity
+                        activeOpacity={0.97}
+                        key={item?.id}
+                        onPress={() =>
+                          router.replace(ROUTES.productDetail(item?.id))
+                        }
+                      >
+                        <ItemCard item={item} />
+                      </TouchableOpacity>
+                    );
+                  })}
+            </ScrollView>
           </View>
         </View>
       </ScrollView>
@@ -276,7 +335,7 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#fff",
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
   },
   image: {
     width: "100%",
@@ -293,7 +352,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
   price: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#4CAF50",
   },
