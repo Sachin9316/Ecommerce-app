@@ -1,5 +1,4 @@
 import CartItem from "@/components/Cart/cartItem";
-import { useTheme } from "@react-navigation/native";
 import React, { useCallback } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { useSelector } from "react-redux";
@@ -37,7 +36,6 @@ export const cardStyle = {
 };
 
 export default function Grocery() {
-  const { color } = useTheme();
   const { cartItemCount } = useSelector((state: any) => state.cart);
   const data = cartItemCount || [];
 
@@ -56,7 +54,6 @@ export default function Grocery() {
   const afterTax = total + taxes;
 
   const renderItem = useCallback(({ item }: { item: any }) => {
-    console.log("Bapp");
     return <CartItem item={item} />;
   }, []);
 

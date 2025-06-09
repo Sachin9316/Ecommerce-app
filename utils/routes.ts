@@ -1,6 +1,7 @@
 export const ROUTES = {
-    root: '/',
-    productDetail: (id: any) => {
+  root: "/",
+  auth: "/login",
+  productDetail: (id: any) => {
     return `/product/${id}`;
-  }
-}
+  },
+};
