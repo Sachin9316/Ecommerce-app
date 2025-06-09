@@ -46,6 +46,7 @@ export default function Navigation() {
           ),
         }}
       />
+      <Stack.Screen name="login/PhoneNumberLoginScreen" options={{headerShown: false}}/>
     </Stack>
   );
 }

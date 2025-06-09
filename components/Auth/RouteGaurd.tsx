@@ -1,9 +1,8 @@
 import { getItem } from "@/utils/AsyncStorage";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 function RouteGuard({ children }: any) {
-    const [authToken, setAuthToken] = useState<string | null>(null);
     const router = useRouter();
 
     const validateAuth = async () => {
@@ -18,7 +17,6 @@ function RouteGuard({ children }: any) {
             console.log("No token, allow access");
         }
 
-        setAuthToken(token);
     };
 
     useEffect(() => {
