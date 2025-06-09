@@ -9,7 +9,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useRouter } from "expo-router";
-import React, { lazy, useEffect, useState, useMemo, useCallback } from "react";
+import React, { lazy, useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -103,16 +103,16 @@ function Home() {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <FontAwesome
-          name="user-o"
-          size={24}
-          color="black"
-          style={styles.userIcon}
-        />
         <Text style={styles.welcomeText}>
           Welcome
           <Entypo name="hand" size={24} color="orange" />
         </Text>
+
+        <FontAwesome
+          name="user-o"
+          size={24}
+          color="black"
+        />
       </View>
 
       <View style={styles.searchWrapper}>
@@ -172,9 +172,9 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 30,
     paddingVertical: 16,
-  },
-  userIcon: {
-    alignSelf: "flex-end",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   welcomeText: {
     fontSize: 28,
