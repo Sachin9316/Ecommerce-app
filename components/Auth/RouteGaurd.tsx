@@ -1,21 +1,31 @@
+import { getItem } from "@/utils/AsyncStorage";
 import { useRouter } from "expo-router";
-import { Route } from "expo-router/build/Route";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-function RouteGaurd({ children }: any) {
-    const authToken = localStorage.getItem('authToken');
+function RouteGuard({ children }: any) {
+    const [authToken, setAuthToken] = useState<string | null>(null);
     const router = useRouter();
 
-    const validation = () => {
-        if (!authToken) {
-            return router.replace(Route.auth);
-        }
-    }
+    const validateAuth = async () => {
+        console.log("Checking auth...");
+        const token = await getItem('authToken');
+        console.log({ token });
 
-    useEffect(validation, [authToken]);
+        if (!token) {
+            console.log("User is authenticated, redirecting...");
+            router.replace('/login/PhoneNumberLoginScreen');
+        } else {
+            console.log("No token, allow access");
+        }
+
+        setAuthToken(token);
+    };
+
+    useEffect(() => {
+        validateAuth();
+    }, []);
 
     return children;
-
 }
 
-export default RouteGaurd;
+export default RouteGuard;

@@ -1,6 +1,6 @@
 export const ROUTES = {
   root: "/",
-  auth: "/login",
+  auth: "/login/PhoneNumberLoginScreen",
   productDetail: (id: any) => {
     return `/product/${id}`;
   },

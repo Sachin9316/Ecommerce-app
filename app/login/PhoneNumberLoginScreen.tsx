@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import * as Yup from "yup";
 import { Formik } from 'formik';
+import React from 'react';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import * as Yup from "yup";
 
 const validationSchema = Yup.object({
     mobile: Yup.string()
@@ -32,18 +32,29 @@ const PhoneNumberLoginScreen = () => {
             {({ handleBlur, handleSubmit, handleChange, values }) => {
                 return (
                     <View style={styles.container}>
-                        <Text style={styles.title}>Phone Number Login</Text>
 
-                        <TextInput
-                            value={values?.mobile}
-                            onChangeText={handleChange('mobile')}
-                            onBlur={handleBlur('mobile')}
-                            maxLength={10}
-                        />
+                        <View>
+                            <Text style={{ borderRadius: 10, color: 'white' }}>
+                                Skip
+                            </Text>
+                        </View>
 
-                        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                            <Text style={styles.buttonText}>Send OTP</Text>
-                        </TouchableOpacity>
+                        <View>
+                            <Text style={styles.title}>Phone Number Login</Text>
+
+                            <TextInput
+                                value={values?.mobile}
+                                onChangeText={handleChange('mobile')}
+                                onBlur={handleBlur('mobile')}
+                                maxLength={10}
+                                style={{ borderWidth: 1, borderColor: "gray", width: '60%' }}
+                                inputMode='numeric'
+                            />
+
+                            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                                <Text style={styles.buttonText}>Send OTP</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 )
             }}
@@ -73,6 +84,7 @@ const styles = StyleSheet.create({
     },
     textInput: {
         paddingVertical: 0,
+        borderWidth: 1,
     },
     button: {
         backgroundColor: '#4CAF50',
